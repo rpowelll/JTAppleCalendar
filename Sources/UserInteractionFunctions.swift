@@ -283,7 +283,7 @@ extension JTAppleCalendarView {
                     self.calendarView.scrollToItem(at: iPath, at: position, animated: animateScroll)
                     
                     if animateScroll {
-                        if let check = self.calendarOffsetIsAlreadyAtScrollPosition(forIndexPath: iPath) where check == true {
+                        if let check = self.calendarOffsetIsAlreadyAtScrollPosition(forIndexPath: iPath), check == true {
                                 self.scrollViewDidEndScrollingAnimation(self.calendarView)
                                 self.scrollInProgress = false
                                 return
