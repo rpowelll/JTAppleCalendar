@@ -27,12 +27,12 @@ public func <(lhs: Date, rhs: Date) -> Bool {
 
 extension Date {
     static func startOfMonthForDate(_ date: Date, usingCalendar calendar:NSCalendar) -> Date? {
-        let dayOneComponents = (calendar as NSCalendar).components([.era, .year, .month], from: date)
+        let dayOneComponents = calendar.components([.era, .year, .month], from: date)
         return calendar.date(from: dayOneComponents)
     }
     
     static func endOfMonthForDate(_ date: Date, usingCalendar calendar:NSCalendar) -> Date? {
-        var lastDayComponents = (calendar as NSCalendar).components([.era, .year, .month], from: date)
+        var lastDayComponents = calendar.components([.era, .year, .month], from: date)
         lastDayComponents.month = lastDayComponents.month! + 1
         lastDayComponents.day = 0
         return calendar.date(from: lastDayComponents)
