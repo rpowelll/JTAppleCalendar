@@ -114,12 +114,12 @@ public class JTAppleCalendarLayout: UICollectionViewLayout, JTAppleCalendarLayou
     
     override  public func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         
-        if !(0...maxSections ~= (indexPath as NSIndexPath).section) || !(0...numberOfDaysPerSection  ~= (indexPath as NSIndexPath).item) { return nil} // return nil on invalid range
+        if !(0...maxSections ~= indexPath.section) || !(0...numberOfDaysPerSection  ~= indexPath.item) { return nil} // return nil on invalid range
         let attr = UICollectionViewLayoutAttributes(forCellWith: indexPath)
         
         // If this index is already cached, then return it else, apply a new layout attribut to it
-        if let alreadyCachedCellAttrib = cellCache[(indexPath as NSIndexPath).section] where (indexPath as NSIndexPath).item < alreadyCachedCellAttrib.count {
-            return alreadyCachedCellAttrib[(indexPath as NSIndexPath).item]
+        if let alreadyCachedCellAttrib = cellCache[indexPath.section] where indexPath.item < alreadyCachedCellAttrib.count {
+            return alreadyCachedCellAttrib[indexPath.item]
         }
         applyLayoutAttributes(attr)
         return attr
@@ -130,9 +130,9 @@ public class JTAppleCalendarLayout: UICollectionViewLayout, JTAppleCalendarLayou
         let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: elementKind, with: indexPath)
         
         // We cache the header here so we dont call the delegate so much
-        let headerSize = cachedHeaderSizeForSection((indexPath as NSIndexPath).section)
+        let headerSize = cachedHeaderSizeForSection(indexPath.section)
         var strideOffset: CGFloat = 0
-        if (indexPath as NSIndexPath).section > 0 {
+        if indexPath.section > 0 {
             var headerSizeOfPreviousSection: CGFloat
             var itemSectionSizeOfPreviousSection: CGFloat
             
@@ -143,7 +143,7 @@ public class JTAppleCalendarLayout: UICollectionViewLayout, JTAppleCalendarLayou
             } else {
                 headerSizeOfPreviousSection = headerCache[attributes.indexPath.section - 1].frame.width
                 itemSectionSizeOfPreviousSection = cellCache[attributes.indexPath.section - 1]![0].frame.width * CGFloat(numberOfColumns)
-                strideOffset = itemSectionSizeOfPreviousSection * CGFloat((indexPath as NSIndexPath).section)
+                strideOffset = itemSectionSizeOfPreviousSection * CGFloat(indexPath.section)
             }
         }
         
@@ -215,14 +215,14 @@ public class JTAppleCalendarLayout: UICollectionViewLayout, JTAppleCalendarLayou
     
     func sizeForitemAtIndexPath(_ indexPath: IndexPath) -> CGSize {
         // Return the size if the cell size is already cached
-        if let cachedCell  = currentCell where cachedCell.section == (indexPath as NSIndexPath).section { return cachedCell.itemSize }
+        if let cachedCell  = currentCell where cachedCell.section == indexPath.section { return cachedCell.itemSize }
         
         // Get header size if it alrady cached
         var headerSize =  CGSize.zero
-        if delegate.registeredHeaderViews.count > 0 { headerSize = cachedHeaderSizeForSection((indexPath as NSIndexPath).section) }
+        if delegate.registeredHeaderViews.count > 0 { headerSize = cachedHeaderSizeForSection(indexPath.section) }
         let currentItemSize = itemSize
         let size            = CGSize(width: currentItemSize.width, height: (collectionView!.frame.height - headerSize.height) / CGFloat(numberOfRows))
-        currentCell         = (section: (indexPath as NSIndexPath).section, itemSize: size)
+        currentCell         = (section: indexPath.section, itemSize: size)
         return size
     }
     

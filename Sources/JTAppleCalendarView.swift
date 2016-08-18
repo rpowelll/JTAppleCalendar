@@ -355,19 +355,21 @@ public class JTAppleCalendarView: UIView {
         let endIndex = IndexPath(item: fdIndex + itemLength - 1, section: section)
         if let theDate = calendar.date(byAdding: .month, value: section / (numberOfSectionsPerMonth), to: cachedConfiguration.startDate, options: []) {
             let monthNumber = calendar.components(.month, from: theDate)
-            if let theStartDate = dateFromPath(startIndex), theEndDate = dateFromPath(endIndex) { return ((theStartDate, theEndDate), monthNumber.month!) }
+            if
+                let theStartDate = dateFromPath(startIndex),
+                let theEndDate = dateFromPath(endIndex) { return ((theStartDate, theEndDate), monthNumber.month!) }
         }
         return nil
     }
     
     func validForwardAndBackwordSelectedIndexes(forIndexPath indexPath: IndexPath)->[IndexPath] {
         var retval = [IndexPath]()
-        if let validForwardIndex = calendarView.layoutAttributesForItem(at: IndexPath(item: (indexPath as NSIndexPath).item + 1, section: (indexPath as NSIndexPath).section)) where
+        if let validForwardIndex = calendarView.layoutAttributesForItem(at: IndexPath(item: indexPath.item + 1, section: indexPath.section)) where
             theSelectedIndexPaths.contains(validForwardIndex.indexPath){
             retval.append(validForwardIndex.indexPath)
         }
         
-        if let validBackwardIndex = calendarView.collectionViewLayout.layoutAttributesForItem(at: IndexPath(item: (indexPath as NSIndexPath).item - 1, section: (indexPath as NSIndexPath).section)) where
+        if let validBackwardIndex = calendarView.collectionViewLayout.layoutAttributesForItem(at: IndexPath(item: indexPath.item - 1, section: indexPath.section)) where
             theSelectedIndexPaths.contains(validBackwardIndex.indexPath) {
             retval.append(validBackwardIndex.indexPath)
         }
@@ -382,7 +384,7 @@ public class JTAppleCalendarView: UIView {
         if let attributes = self.calendarView.layoutAttributesForItem(at: indexPath) {
             let origin = attributes.frame.origin
             let offset = direction == .horizontal ? origin.x : origin.y
-            if  self.calendarView.contentOffset.x == offset || (scrollingMode.pagingIsEnabled() && ((indexPath as NSIndexPath).section ==  currentSectionPage)) {
+            if  self.calendarView.contentOffset.x == offset || (scrollingMode.pagingIsEnabled() && (indexPath.section ==  currentSectionPage)) {
                 retval = true
             } else {
                 retval = false
@@ -777,8 +779,8 @@ public class JTAppleCalendarView: UIView {
 
 extension JTAppleCalendarView {
     func cellStateFromIndexPath(_ indexPath: IndexPath, withDate date: Date, cell: JTAppleDayCell? = nil)->CellState {
-        let itemIndex = (indexPath as NSIndexPath).item
-        let itemSection = (indexPath as NSIndexPath).section
+        let itemIndex = indexPath.item
+        let itemSection = indexPath.section
         let currentMonthInfo = monthInfo[itemSection]
         let fdIndex = currentMonthInfo[FIRST_DAY_INDEX]
         let nDays = currentMonthInfo[NUMBER_OF_DAYS_INDEX]
@@ -803,8 +805,8 @@ extension JTAppleCalendarView {
         let rangePosition = {()->SelectionRangePosition in
             if self.theSelectedIndexPaths.contains(indexPath) {
                 if self.selectedDates.count == 1 { return .full}
-                let left = self.theSelectedIndexPaths.contains(IndexPath(item: (indexPath as NSIndexPath).item - 1, section: (indexPath as NSIndexPath).section))
-                let right = self.theSelectedIndexPaths.contains(IndexPath(item: (indexPath as NSIndexPath).item + 1, section: (indexPath as NSIndexPath).section))
+                let left = self.theSelectedIndexPaths.contains(IndexPath(item: indexPath.item - 1, section: indexPath.section))
+                let right = self.theSelectedIndexPaths.contains(IndexPath(item: indexPath.item + 1, section: indexPath.section))
                 if (left == right) {
                     if left == false { return .full } else { return .middle }
                 } else {
@@ -877,8 +879,8 @@ extension JTAppleCalendarView {
     }
     
     func dateFromPath(_ indexPath: IndexPath)-> Date? { // Returns nil if date is out of scope
-        let itemIndex = (indexPath as NSIndexPath).item
-        let itemSection = (indexPath as NSIndexPath).section
+        let itemIndex = indexPath.item
+        let itemSection = indexPath.section
         let monthIndexWeAreOn = itemSection / numberOfSectionsPerMonth
         let currentMonthInfo = monthInfo[itemSection]
         let fdIndex = currentMonthInfo[FIRST_DAY_INDEX]
