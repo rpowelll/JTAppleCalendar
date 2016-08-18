@@ -166,7 +166,7 @@ extension JTAppleCalendarView {
         }
         
         for date in validDatesToSelect {
-            let components = (self.calendar as NSCalendar).components([.year, .month, .day],  from: date)
+            let components = self.calendar.dateComponents([.year, .month, .day],  from: date)
             let firstDayOfDate = self.calendar.date(from: components)!
             
             // If the date is not within valid boundaries, then exit
@@ -244,7 +244,7 @@ extension JTAppleCalendarView {
     public func scrollToDate(_ date: Date, triggerScrollToDateDelegate: Bool = true, animateScroll: Bool = true, preferredScrollPosition: UICollectionViewScrollPosition? = nil, completionHandler:(()->Void)? = nil) {
         self.triggerScrollToDateDelegate = triggerScrollToDateDelegate
         
-        let components = calendar.components([.year, .month, .day],  from: date)
+        let components = calendar.dateComponents([.year, .month, .day],  from: date)
         let firstDayOfDate = calendar.date(from: components)!
         
         scrollInProgress = true
@@ -344,7 +344,7 @@ extension JTAppleCalendarView {
         var currentDate = startDate
         repeat {
             returnDates.append(currentDate)
-            currentDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate, options: [])!)
+            currentDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: currentDate)!)
         } while currentDate <= endDate
         return returnDates
     }

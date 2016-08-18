@@ -14,7 +14,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var calendarView: JTAppleCalendarView!
     @IBOutlet weak var monthLabel: UILabel!
     let formatter = DateFormatter()
-    let testCalendar: NSCalendar! = NSCalendar(identifier: NSCalendar.Identifier.gregorian)
+    var testCalendar: Calendar! = Calendar(identifier: .gregorian)
     
     @IBAction func changeToThreeRows(_ sender: UIButton) {
         numberOfRows = 3
@@ -29,7 +29,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         formatter.dateFormat = "yyyy MM dd"
-        testCalendar.timeZone = NSTimeZone(abbreviation: "GMT")! as TimeZone
+        testCalendar.timeZone = TimeZone(abbreviation: "GMT")!
         
         // Setting up your dataSource and delegate is manditory
         //_____________________________________________________________________________________________
@@ -109,18 +109,18 @@ class ViewController: UIViewController {
     func setupViewsOfCalendar(_ startDate: Date, endDate: Date) {
         let month = testCalendar.component(.month, from: startDate)
         let monthName = DateFormatter().monthSymbols[(month-1) % 12] // 0 indexed array
-        let year = NSCalendar.current.component(.year, from: startDate)
+        let year = Calendar.current.component(.year, from: startDate)
         monthLabel.text = monthName + " " + String(year)
     }
 }
 
 // MARK : JTAppleCalendarDelegate
 extension ViewController: JTAppleCalendarViewDataSource, JTAppleCalendarViewDelegate {
-    func configureCalendar(_ calendar: JTAppleCalendarView) -> (startDate: Date, endDate: Date, numberOfRows: Int, calendar: NSCalendar) {
+    func configureCalendar(_ calendar: JTAppleCalendarView) -> (startDate: Date, endDate: Date, numberOfRows: Int, calendar: Calendar) {
         
         let firstDate = formatter.date(from: "2016 01 01")
         let secondDate = Date()
-        let aCalendar = NSCalendar.current // Properly configure your calendar to your time zone here
+        let aCalendar = Calendar.current // Properly configure your calendar to your time zone here
         return (startDate: firstDate!, endDate: secondDate, numberOfRows: numberOfRows, calendar: aCalendar)
     }
     

@@ -141,16 +141,16 @@ public class JTAppleCalendarView: UIView {
         get { return cachedConfiguration.endDate }
     }
     
-    var calendar: NSCalendar {
+    var calendar: Calendar {
         get { return cachedConfiguration.calendar }
     }
     
-    lazy var cachedConfiguration: (startDate: Date, endDate: Date, numberOfRows: Int, calendar: NSCalendar) = {
+    lazy var cachedConfiguration: (startDate: Date, endDate: Date, numberOfRows: Int, calendar: Calendar) = {
         [weak self] in
         
         guard let  config = self!.dataSource?.configureCalendar(self!) else {
             assert(false, "DataSource is not set")
-            return (startDate: Date(), endDate: Date(), 0, NSCalendar(identifier: "nil" as NSCalendar.Identifier)!)
+            return (startDate: Date(), endDate: Date(), 0, Calendar(identifier: .gregorian))
         }
         
         return (startDate: config.startDate, endDate: config.endDate, numberOfRows: config.numberOfRows, calendar: config.calendar)
@@ -353,8 +353,8 @@ public class JTAppleCalendarView: UIView {
         let fdIndex = monthData[FIRST_DAY_INDEX]
         let startIndex = IndexPath(item: fdIndex, section: section)
         let endIndex = IndexPath(item: fdIndex + itemLength - 1, section: section)
-        if let theDate = calendar.date(byAdding: .month, value: section / (numberOfSectionsPerMonth), to: cachedConfiguration.startDate, options: []) {
-            let monthNumber = calendar.components(.month, from: theDate)
+        if let theDate = calendar.date(byAdding: .month, value: section / (numberOfSectionsPerMonth), to: cachedConfiguration.startDate) {
+            let monthNumber = calendar.dateComponents([.month], from: theDate)
             if
                 let theStartDate = dateFromPath(startIndex),
                 let theEndDate = dateFromPath(endIndex) { return ((theStartDate, theEndDate), monthNumber.month!) }
@@ -563,11 +563,11 @@ public class JTAppleCalendarView: UIView {
             }
         } else { // If the date does belong to this month, then lets find out if it has a counterpart date
             if date >= startOfMonthCache && date <= endOfMonthCache {
-                let dayIndex = calendar.components(.day, from: date).day!
+                let dayIndex = calendar.dateComponents([.day], from: date).day!
                 if case 1...13 = dayIndex  { // then check the previous month
                     // get the index path of the last day of the previous month
                     
-                    guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: date, options: []),
+                    guard let prevMonth = calendar.date(byAdding: .month, value: -1, to: date),
                         prevMonth >= startOfMonthCache && prevMonth <= endOfMonthCache else {
                         return retval
                     }
@@ -604,7 +604,7 @@ public class JTAppleCalendarView: UIView {
                         print("out of range error in indexPathOfdateCellCounterPart() upper. This should not happen. Contact developer on github")
                     }
                 } else if case 26...31 = dayIndex  { // check the following month
-                    guard let followingMonth = calendar.date(byAdding: .month, value: 1, to: date, options: []), followingMonth >= startOfMonthCache && followingMonth <= endOfMonthCache else {
+                    guard let followingMonth = calendar.date(byAdding: .month, value: 1, to: date), followingMonth >= startOfMonthCache && followingMonth <= endOfMonthCache else {
                         return retval
                     }
                     
@@ -616,7 +616,7 @@ public class JTAppleCalendarView: UIView {
                     if indexPathOfFirstDayOfFollowingMonth.count > 0 {
                         let firstDayIndex = (indexPathOfFirstDayOfFollowingMonth[0] as NSIndexPath).item
                         let lastDay = Date.endOfMonthForDate(date, usingCalendar: calendar)!
-                        let lastDayIndex = calendar.components(.day, from: lastDay).day
+                        let lastDayIndex = calendar.dateComponents([.day], from: lastDay).day
                         let x = lastDayIndex! - dayIndex
                         let y = firstDayIndex - x - 1
                         
@@ -652,7 +652,7 @@ public class JTAppleCalendarView: UIView {
         var retval: [[Int]] = []
         if var validConfig = dataSource?.configureCalendar(self) {
             // check if the dates are in correct order
-            if validConfig.calendar.compare(validConfig.startDate, to: validConfig.endDate, toUnitGranularity: .nanosecond) == ComparisonResult.orderedDescending {
+            if validConfig.calendar.compare(validConfig.startDate, to: validConfig.endDate, toGranularity: .nanosecond) == ComparisonResult.orderedDescending {
                 assert(false, "Error, your start date cannot be greater than your end date\n")
                 return retval
             }
@@ -675,15 +675,10 @@ public class JTAppleCalendarView: UIView {
                 startOfMonthCache = startMonth
                 endOfMonthCache = endMonth
                 
-                let differenceComponents = validConfig.calendar.components(
-                    .month,
-                    from: startOfMonthCache,
-                    to: endOfMonthCache,
-                    options: []
-                )
+                let differenceComponents = validConfig.calendar.dateComponents( [.month], from: startOfMonthCache, to: endOfMonthCache )
                 
                 // Create boundary date
-                let leftDate = validConfig.calendar.date(byAdding: .weekday, value: -1, to: startOfMonthCache, options: [])!
+                let leftDate = validConfig.calendar.date(byAdding: .weekday, value: -1, to: startOfMonthCache)!
                 let leftDateInt = validConfig.calendar.component(.day, from: leftDate)
                 
                 // Number of months
@@ -694,9 +689,8 @@ public class JTAppleCalendarView: UIView {
 
                 // Section represents # of months. section is used as an offset to determine which month to calculate
                 for numberOfMonthsIndex in 0 ... numberOfMonths - 1 {
-                    if let correctMonthForSectionDate = validConfig.calendar.date(byAdding: .month, value: numberOfMonthsIndex, to: startOfMonthCache, options: []) {
-                        
-                        let numberOfDaysInMonth = validConfig.calendar.range(of: .day, in: .month, for: correctMonthForSectionDate).length
+                    if let correctMonthForSectionDate = validConfig.calendar.date(byAdding: .month, value: numberOfMonthsIndex, to: startOfMonthCache) {
+                        let numberOfDaysInMonth = validConfig.calendar.range(of: .day, in: .month, for: correctMonthForSectionDate)!.count
                         
                         var firstWeekdayOfMonthIndex = validConfig.calendar.component(.weekday, from: correctMonthForSectionDate)
                         firstWeekdayOfMonthIndex -= 1 // firstWeekdayOfMonthIndex should be 0-Indexed
@@ -756,14 +750,14 @@ public class JTAppleCalendarView: UIView {
         var returnPaths: [IndexPath] = []
         for date in dates {
             if  calendar.startOfDay(for: date) >= startOfMonthCache && calendar.startOfDay(for: date) <= endOfMonthCache {
-                let periodApart = calendar.components(.month, from: startOfMonthCache, to: date, options: [])
+                let periodApart = calendar.dateComponents([.month], from: startOfMonthCache, to: date)
                 let monthSectionIndex = periodApart.month!
                 let startSectionIndex = monthSectionIndex * numberOfSectionsPerMonth
                 let sectionIndex = startMonthSectionForSection(startSectionIndex) // Get the section within the month
                 
                 // Get the section Information
                 let currentMonthInfo = monthInfo[sectionIndex]
-                let dayIndex = calendar.components(.day, from: date).day!
+                let dayIndex = calendar.dateComponents([.day], from: date).day!
                 
                 // Given the following, find the index Path
                 let fdIndex = currentMonthInfo[FIRST_DAY_INDEX]
@@ -871,7 +865,7 @@ extension JTAppleCalendarView {
     
     func selectCounterPartCellIndexPathIfExists(_ indexPath: IndexPath, date: Date, dateOwner: CellState.DateOwner) -> IndexPath? {
         if let counterPartCellIndexPath = indexPathOfdateCellCounterPart(date, indexPath: indexPath, dateOwner: dateOwner) {
-            let dateComps = calendar.components([.month, .day, .year], from: date)
+            let dateComps = calendar.dateComponents([.month, .day, .year], from: date)
             guard let counterpartDate = calendar.date(from: dateComps) else { return nil }
             addCellToSelectedSetIfUnselected(counterPartCellIndexPath, date:counterpartDate)
             return counterPartCellIndexPath
@@ -891,7 +885,7 @@ extension JTAppleCalendarView {
         dateComponents.month = monthIndexWeAreOn
         dateComponents.weekday = cellDate - 1
         
-        return calendar.date(byAdding: dateComponents, to: startOfMonthCache, options: [])
+        return calendar.date(byAdding: dateComponents, to: startOfMonthCache)
     }
 }
 
